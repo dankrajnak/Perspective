@@ -31,42 +31,71 @@ if (width > height) {
     bottom = up + (right - left);
 }
 
-let rectangle = [[left, up], [right, up], [right, bottom], [left, bottom]];
+let originalSquare = [[left, up], [right, up], [right, bottom], [left, bottom]];
+let square = []
+//Deep copy
+originalSquare.forEach((point) =>{
+    square.push(point.slice())
+})
+console.log(originalSquare);
 
-const simpleDistance = 60;
+const depth = 60;
+const maxSquareDisplacement = 60;
 const lineColor = '#CCB255';
 const background = '#111';
 const lineWidth = 3
 
-container.on('mousemove', function(){
+container.on('mousemove', function () {
     let mouse = d3.mouse(this);
-    context.clearRect(0,0,width,height, background);
+    context.clearRect(0, 0, width, height, background);
     context.fillStyle = background
-    context.fillRect(0,0, width, height);
+    context.fillRect(0, 0, width, height);
     context.strokeStyle = lineColor;
     context.lineWidth = lineWidth;
+    
+    //Move square
+    let centerOfSquare = [(left+right)/2, (up+bottom)/2];
+    let displacementVector = [0,0];
+    let squareDisplacement= maxSquareDisplacement
+    
+    if(euclideanDistance(centerOfSquare, mouse) < maxSquareDisplacement){
+         squareDisplacement = euclideanDistance(centerOfSquare, mouse);
+    }
+        displacementVector = distanceDownLine(centerOfSquare, mouse, squareDisplacement)
+        displacementVector[0] -= centerOfSquare[0]
+        displacementVector[1] -= centerOfSquare[1]
+    
+    for(let i = 0; i< 4; i++){
+        square[i][0] = originalSquare[i][0] - displacementVector[0];
+        square[i][1] = originalSquare[i][1] - displacementVector[1];
+    }
+    
+    
     /*---- Calculate second square -----*/
     let secondSquare = [];
-    secondSquare.push(distanceDownLine(rectangle[0], mouse, simpleDistance));
-    secondSquare.push([calculateIntersection(rectangle[1], mouse, true, secondSquare[0][1]), secondSquare[0][1]]);
-    secondSquare.push([secondSquare[1][0], calculateIntersection(rectangle[2], mouse, false, secondSquare[1][0])]);
-    secondSquare.push([calculateIntersection(rectangle[3], mouse, true, secondSquare[2][1]), secondSquare[2][1]])
-    
-    //Draw second square
-    context.beginPath();
+    if (euclideanDistance(mouse, square[0]) < depth) {
+        for (let i = 0; i < 4; i++) {
+            secondSquare.push(mouse);
+        }
+    } else {
+        secondSquare.push(distanceDownLine(square[0], mouse, depth));
+        secondSquare.push([calculateIntersection(square[1], mouse, true, secondSquare[0][1]), secondSquare[0][1]]);
+        secondSquare.push([secondSquare[1][0], calculateIntersection(square[2], mouse, false, secondSquare[1][0])]);
+        secondSquare.push([calculateIntersection(square[3], mouse, true, secondSquare[2][1]), secondSquare[2][1]])
+        //Draw second square
+        context.beginPath();
         context.moveTo(secondSquare[secondSquare.length - 1][0], secondSquare[secondSquare.length - 1][1])
         secondSquare.forEach((point) => context.lineTo(point[0], point[1]));
         context.stroke();
-    context.closePath;
-         
-
-    rectangle.forEach((point, index)=>{
+        context.closePath;
+    }
+    square.forEach((point, index) => {
         context.beginPath();
         context.moveTo(point[0], point[1]);
         context.lineTo(secondSquare[index][0], secondSquare[index][1]);
         context.stroke();
         context.closePath();
-        
+
         context.beginPath();
         context.moveTo(secondSquare[index][0], secondSquare[index][1]);
         context.setLineDash([0, 4, lineWidth, 4]);
@@ -75,51 +104,47 @@ container.on('mousemove', function(){
         context.closePath();
         context.setLineDash([])
     })
-    drawRectangle()
+    drawsquare()
 });
 
-function drawRectangle(){
+function drawsquare() {
     context.beginPath();
-        context.moveTo(rectangle[rectangle.length - 1][0], rectangle[rectangle.length - 1][1])
-        rectangle.forEach((point) => context.lineTo(point[0], point[1]));
-        context.stroke();
+    context.moveTo(square[square.length - 1][0], square[square.length - 1][1])
+    square.forEach((point) => context.lineTo(point[0], point[1]));
+    context.stroke();
     context.closePath;
 }
 
-function distanceDownLine(pointA, pointB, distance){
+function distanceDownLine(pointA, pointB, distance) {
     /* Returns a point the given distance down the line specified */
-    
+
     //Similar triangles
     const A = pointB[1] - pointA[1];
     const B = pointB[0] - pointA[0];
     const C = euclideanDistance(pointA, pointB);
-    
-    const x = B - B*(C - distance)/C;
-    const y = A - A*(C - distance)/C;
-    
-    return [pointA[0]+x, pointA[1]+y];
+
+    const x = B - B * (C - distance) / C;
+    const y = A - A * (C - distance) / C;
+
+    return [pointA[0] + x, pointA[1] + y];
 }
 
-function calculateIntersection(pointA, pointB, horizontal, intLine){
+function calculateIntersection(pointA, pointB, horizontal, intLine) {
     /* Calculates the intersection between a given line and a horizontal or vertical line. */
-    
-    if(horizontal){
+
+    if (horizontal) {
         //Using two points form of the line
         //x = (x2-x1)(y-y1)/(y2-y1)+x1
-        return (pointB[0]-pointA[0])*(intLine-pointA[1])/(pointB[1]-pointA[1])+pointA[0]
-        
-    } else{
+        return (pointB[0] - pointA[0]) * (intLine - pointA[1]) / (pointB[1] - pointA[1]) + pointA[0]
+
+    } else {
         //Using two points form of the line
         //y = (y2 -y1)(x-x1)/(x2-x1)+y1
-        return (pointB[1]-pointA[1])*(intLine-pointA[0])/(pointB[0]-pointA[0])+pointA[1]
-    }  
+        return (pointB[1] - pointA[1]) * (intLine - pointA[0]) / (pointB[0] - pointA[0]) + pointA[1]
+    }
 }
 
-function euclideanDistance(pointA, pointB){
+function euclideanDistance(pointA, pointB) {
     //sqrt(a^2+b^2)
-    return Math.sqrt(Math.pow(pointA[0]-pointB[0], 2) + Math.pow(pointA[1]-pointB[1], 2));
+    return Math.sqrt(Math.pow(pointA[0] - pointB[0], 2) + Math.pow(pointA[1] - pointB[1], 2));
 }
-
-
-
-

@@ -34,9 +34,16 @@ if (width > height) {
     bottom = up + (right - left);
 }
 
-var rectangle = [[left, up], [right, up], [right, bottom], [left, bottom]];
+var originalSquare = [[left, up], [right, up], [right, bottom], [left, bottom]];
+var square = [];
+//Deep copy
+originalSquare.forEach(function (point) {
+    square.push(point.slice());
+});
+console.log(originalSquare);
 
-var simpleDistance = 60;
+var depth = 60;
+var maxSquareDisplacement = 60;
 var lineColor = '#CCB255';
 var background = '#111';
 var lineWidth = 3;
@@ -48,23 +55,45 @@ container.on('mousemove', function () {
     context.fillRect(0, 0, width, height);
     context.strokeStyle = lineColor;
     context.lineWidth = lineWidth;
+
+    //Move square
+    var centerOfSquare = [(left + right) / 2, (up + bottom) / 2];
+    var displacementVector = [0, 0];
+    var squareDisplacement = maxSquareDisplacement;
+
+    if (euclideanDistance(centerOfSquare, mouse) < maxSquareDisplacement) {
+        squareDisplacement = euclideanDistance(centerOfSquare, mouse);
+    }
+    displacementVector = distanceDownLine(centerOfSquare, mouse, squareDisplacement);
+    displacementVector[0] -= centerOfSquare[0];
+    displacementVector[1] -= centerOfSquare[1];
+
+    for (var i = 0; i < 4; i++) {
+        square[i][0] = originalSquare[i][0] - displacementVector[0];
+        square[i][1] = originalSquare[i][1] - displacementVector[1];
+    }
+
     /*---- Calculate second square -----*/
     var secondSquare = [];
-    secondSquare.push(distanceDownLine(rectangle[0], mouse, simpleDistance));
-    secondSquare.push([calculateIntersection(rectangle[1], mouse, true, secondSquare[0][1]), secondSquare[0][1]]);
-    secondSquare.push([secondSquare[1][0], calculateIntersection(rectangle[2], mouse, false, secondSquare[1][0])]);
-    secondSquare.push([calculateIntersection(rectangle[3], mouse, true, secondSquare[2][1]), secondSquare[2][1]]);
-
-    //Draw second square
-    context.beginPath();
-    context.moveTo(secondSquare[secondSquare.length - 1][0], secondSquare[secondSquare.length - 1][1]);
-    secondSquare.forEach(function (point) {
-        return context.lineTo(point[0], point[1]);
-    });
-    context.stroke();
-    context.closePath;
-
-    rectangle.forEach(function (point, index) {
+    if (euclideanDistance(mouse, square[0]) < depth) {
+        for (var _i = 0; _i < 4; _i++) {
+            secondSquare.push(mouse);
+        }
+    } else {
+        secondSquare.push(distanceDownLine(square[0], mouse, depth));
+        secondSquare.push([calculateIntersection(square[1], mouse, true, secondSquare[0][1]), secondSquare[0][1]]);
+        secondSquare.push([secondSquare[1][0], calculateIntersection(square[2], mouse, false, secondSquare[1][0])]);
+        secondSquare.push([calculateIntersection(square[3], mouse, true, secondSquare[2][1]), secondSquare[2][1]]);
+        //Draw second square
+        context.beginPath();
+        context.moveTo(secondSquare[secondSquare.length - 1][0], secondSquare[secondSquare.length - 1][1]);
+        secondSquare.forEach(function (point) {
+            return context.lineTo(point[0], point[1]);
+        });
+        context.stroke();
+        context.closePath;
+    }
+    square.forEach(function (point, index) {
         context.beginPath();
         context.moveTo(point[0], point[1]);
         context.lineTo(secondSquare[index][0], secondSquare[index][1]);
@@ -79,13 +108,13 @@ container.on('mousemove', function () {
         context.closePath();
         context.setLineDash([]);
     });
-    drawRectangle();
+    drawsquare();
 });
 
-function drawRectangle() {
+function drawsquare() {
     context.beginPath();
-    context.moveTo(rectangle[rectangle.length - 1][0], rectangle[rectangle.length - 1][1]);
-    rectangle.forEach(function (point) {
+    context.moveTo(square[square.length - 1][0], square[square.length - 1][1]);
+    square.forEach(function (point) {
         return context.lineTo(point[0], point[1]);
     });
     context.stroke();
