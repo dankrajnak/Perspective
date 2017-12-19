@@ -1,7 +1,6 @@
 # APTE Voronoi
-A interactive javascript element I'm making for my personal website.  It uses D3.js and an HTML canvas.
-Y
-ou can view the display at [dankrajnak.github.io/Perspective](https://dankrajnak.github.io/Perspective)
+A interactive javascript element I'm making for my personal website. 
+You can view the display at [danielkrajnak.com/Perspective](https://danielkrajnak.com/Perspective)
 
 #### Interactivity
 Move your mouse around to see the persepctive change
