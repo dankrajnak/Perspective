@@ -16,14 +16,18 @@ var Wanderer = function () {
         this._animationFrame;
         this._wandering = false;
         this._alpha = 3; //Parameter of easing function
+        this._distanceFromToToFrom; //Fun one to name
+        this._delay;
     }
 
     _createClass(Wanderer, [{
         key: "startWandering",
         value: function startWandering(callBack, time) {
-            var from = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [Math.random() * this.width, Math.random() * this.height];
+            var delay = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+            var from = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [Math.random() * this.width, Math.random() * this.height];
 
             this._wandering = true;
+            this._delay = delay;
             this.wanderToFrom([Math.random() * this.width, Math.random() * this.height], from, time, callBack);
         }
     }, {
@@ -43,6 +47,7 @@ var Wanderer = function () {
             var _this = this;
 
             this._alpha = Math.random() * 4 + 1 | 0; //Randomly pick new alpha for easing function
+            this._distanceFromToToFrom = this._euclideanDistance(to, from);
             this._animationFrame = window.requestAnimationFrame(function (timeStep) {
                 return _this._step(to, from, time, callback, timeStep);
             });
@@ -55,21 +60,25 @@ var Wanderer = function () {
             if (!this._wanderToFromStart) this._wanderToFromStart = timeStep;
 
             var progress = timeStep - this._wanderToFromStart;
-            var newPosition = this._interpolate(to, from, Math.min(1, progress / totalTime));
-            callback(newPosition);
+            callback(this._interpolate(to, from, Math.min(1, progress / totalTime)));
             if (progress < totalTime) this._animationFrame = window.requestAnimationFrame(function (newTimeStep) {
-                return _this2._step(to, newPosition, totalTime, callback, newTimeStep);
+                return _this2._step(to, from, totalTime, callback, newTimeStep);
             });else {
                 this._wanderToFromStart = null;
                 //If wandering, wander from this point to a new one
-                if (this._wandering) this.wanderToFrom([Math.random() * width, Math.random() * height], newPosition, totalTime, callback);
+                if (this._wandering) if (this._delay > 0) {
+                    setTimeout(function () {
+                        return _this2.wanderToFrom([Math.random() * _this2.width, Math.random() * _this2.height], to, totalTime, callback);
+                    }, this._delay);
+                } else {
+                    this.wanderToFrom([Math.random() * this.width, Math.random() * this.height], to, totalTime, callback);
+                }
             }
         }
     }, {
         key: "_interpolate",
         value: function _interpolate(to, from, t) {
-            var totalDistance = this._euclideanDistance(to, from);
-            return this._distanceDownLine(from, to, totalDistance * this._easeInOut(t));
+            return this._distanceDownLine(from, to, this._distanceFromToToFrom * this._easeInOut(t));
         }
     }, {
         key: "_easeInOut",

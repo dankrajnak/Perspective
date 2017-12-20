@@ -15,7 +15,7 @@ perspective.background = '#CCB255'; //gold
 var wanderer = new Wanderer(width, height);
 wanderer.startWandering(function (pos) {
   return perspective.drawSquare(pos);
-}, 2000);
+}, 2000, 500);
 
 canvas.addEventListener('mouseover', function (event) {
   return wanderer.stopWandering(true);
@@ -26,5 +26,5 @@ canvas.addEventListener('mousemove', function (event) {
 canvas.addEventListener('mouseout', function (event) {
   return wanderer.startWandering(function (pos) {
     return perspective.drawSquare(pos);
-  }, 2000, [event.offsetX, event.offsetY]);
+  }, 2000, 500, [event.offsetX, event.offsetY]);
 });

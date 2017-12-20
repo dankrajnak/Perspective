@@ -10,10 +10,13 @@ class Wanderer{
         this._animationFrame;
         this._wandering = false;
         this._alpha = 3; //Parameter of easing function
+        this._distanceFromToToFrom; //Fun one to name
+        this._delay;
     }
     
-    startWandering(callBack, time, from=[Math.random()*this.width, Math.random()*this.height]){
+    startWandering(callBack, time, delay = 0, from=[Math.random()*this.width, Math.random()*this.height]){
         this._wandering = true;
+        this._delay = delay;
         this.wanderToFrom([Math.random()*this.width, Math.random()*this.height], from, time, callBack);
     }
     
@@ -27,6 +30,7 @@ class Wanderer{
     
     wanderToFrom(to, from, time, callback){
         this._alpha = (Math.random()*4+1) | 0; //Randomly pick new alpha for easing function
+        this._distanceFromToToFrom = this._euclideanDistance(to, from); 
         this._animationFrame = window.requestAnimationFrame((timeStep)=>this._step(to, from, time, callback, timeStep));
     }
     
@@ -34,21 +38,24 @@ class Wanderer{
         if(!this._wanderToFromStart) this._wanderToFromStart = timeStep;
         
         let progress = timeStep - this._wanderToFromStart;
-        let newPosition = this._interpolate(to, from, Math.min(1, progress/totalTime));
-        callback(newPosition); 
+        callback(this._interpolate(to, from, Math.min(1, progress/totalTime))); 
         if(progress < totalTime)
-            this._animationFrame = window.requestAnimationFrame((newTimeStep) => this._step(to, newPosition, totalTime, callback, newTimeStep))
+            this._animationFrame = window.requestAnimationFrame((newTimeStep) => this._step(to, from, totalTime, callback, newTimeStep))
         else{
             this._wanderToFromStart = null;
             //If wandering, wander from this point to a new one
             if(this._wandering)
-                this.wanderToFrom([Math.random()*width, Math.random()*height], newPosition, totalTime, callback);
+                if(this._delay > 0){
+                    setTimeout(()=>this.wanderToFrom([Math.random()*this.width, Math.random()*this.height], to, totalTime, callback), this._delay);
+                }
+                else{
+                    this.wanderToFrom([Math.random()*this.width, Math.random()*this.height], to, totalTime, callback);
+                }
         }
     }
     
     _interpolate(to, from, t){
-        let totalDistance = this._euclideanDistance(to, from);
-        return this._distanceDownLine(from, to, totalDistance*this._easeInOut(t));
+        return this._distanceDownLine(from, to, this._distanceFromToToFrom*this._easeInOut(t));
     }
     
     _easeInOut(t) {
