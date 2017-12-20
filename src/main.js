@@ -5,12 +5,15 @@ let canvas = document.getElementById('perspective');
 
 canvas.setAttribute('width', width);
 canvas.setAttribute('height', height);
-const container = document.getElementById('perspective');
-
 
 let perspective = new PerspectiveSquare(canvas, [width*.4, height*.4], Math.min(width, height)*.2);
 
 perspective.lineColor = '#111'; //dark grey
 perspective.background = '#CCB255'; //gold
 
-container.addEventListener('mousemove', event => perspective.drawSquare([event.offsetX, event.offsetY]));
+let wanderer = new Wanderer(width, height);
+wanderer.startWandering((pos) => perspective.drawSquare(pos), 2000);
+
+canvas.addEventListener('mouseover', event=> wanderer.stopWandering(true));
+canvas.addEventListener('mousemove', event => perspective.drawSquare([event.offsetX, event.offsetY]));
+canvas.addEventListener('mouseout', event => wanderer.startWandering(pos=>perspective.drawSquare(pos), 2000, [event.offsetX, event.offsetY]));
