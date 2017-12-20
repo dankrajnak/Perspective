@@ -10,8 +10,6 @@ var Wanderer = function () {
 
         this.width = width;
         this.height = height;
-        this._pos = [Math.random() * width, Math.random() * height];
-        this._FRAME_RATE = 33;
         this._wanderToFromStart = null;
         this._animationFrame;
         this._wandering = false;
@@ -66,12 +64,14 @@ var Wanderer = function () {
             });else {
                 this._wanderToFromStart = null;
                 //If wandering, wander from this point to a new one
-                if (this._wandering) if (this._delay > 0) {
-                    setTimeout(function () {
-                        return _this2.wanderToFrom([Math.random() * _this2.width, Math.random() * _this2.height], to, totalTime, callback);
-                    }, this._delay);
-                } else {
-                    this.wanderToFrom([Math.random() * this.width, Math.random() * this.height], to, totalTime, callback);
+                if (this._wandering) {
+                    if (this._delay > 0) {
+                        setTimeout(function () {
+                            return _this2.wanderToFrom([Math.random() * _this2.width, Math.random() * _this2.height], to, totalTime, callback);
+                        }, this._delay);
+                    } else {
+                        this.wanderToFrom([Math.random() * this.width, Math.random() * this.height], to, totalTime, callback);
+                    }
                 }
             }
         }

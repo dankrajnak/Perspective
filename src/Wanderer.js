@@ -1,11 +1,8 @@
 class Wanderer{
     
-    
     constructor(width, height){
         this.width = width;
         this.height = height;
-        this._pos = [Math.random()* width, Math.random() * height];
-        this._FRAME_RATE = 33;
         this._wanderToFromStart = null;
         this._animationFrame;
         this._wandering = false;
@@ -44,13 +41,14 @@ class Wanderer{
         else{
             this._wanderToFromStart = null;
             //If wandering, wander from this point to a new one
-            if(this._wandering)
+            if(this._wandering){
                 if(this._delay > 0){
                     setTimeout(()=>this.wanderToFrom([Math.random()*this.width, Math.random()*this.height], to, totalTime, callback), this._delay);
                 }
                 else{
                     this.wanderToFrom([Math.random()*this.width, Math.random()*this.height], to, totalTime, callback);
                 }
+            }
         }
     }
     
