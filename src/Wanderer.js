@@ -26,7 +26,7 @@ class Wanderer{
     }
     
     wanderToFrom(to, from, time, callback){
-        this._alpha = (Math.random()*4+1) | 0; //Randomly pick new alpha for easing function
+        this._alpha = (Math.random()*3+2) | 0; //Randomly pick new alpha for easing function
         this._distanceFromToToFrom = this._euclideanDistance(to, from); 
         this._animationFrame = window.requestAnimationFrame((timeStep)=>this._step(to, from, time, callback, timeStep));
     }
