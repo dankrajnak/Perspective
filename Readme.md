@@ -1,4 +1,4 @@
-# APTE Voronoi
+# Perspective
 A interactive javascript element I'm making for my personal website. 
 You can view the display at [danielkrajnak.com/Perspective](https://danielkrajnak.com/Perspective)
 
